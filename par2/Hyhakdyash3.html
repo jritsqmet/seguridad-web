@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Acceso Seguro</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #0f0;
+            box-shadow: 0 0 10px #0f0;
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .input-group {
+            margin: 30px 0;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            background: #111;
+            border: 1px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            display: block;
+            margin: 10px auto;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error {
+            color: #f00;
+            text-shadow: 0 0 5px #f00;
+        }
+        
+        .success {
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        /* Efectos de terminal */
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 255, 0, 0.1) 0%,
+                rgba(0, 255, 0, 0) 10%
+            );
+            background-size: 100% 5px;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes scan {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+        
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 #0f0, -2px 0 #f00; }
+            25% { text-shadow: -2px 0 #0f0, 2px 0 #f00; }
+            50% { text-shadow: 2px 0 #f00, -2px 0 #0f0; }
+            75% { text-shadow: -2px 0 #f00, 2px 0 #0f0; }
+            100% { text-shadow: 2px 0 #0f0, -2px 0 #f00; }
+        }
+        
+        /* Mensaje de advertencia */
+        .context-menu-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            border: 2px solid #f00;
+            padding: 20px;
+            color: #f00;
+            text-align: center;
+            display: none;
+            z-index: 9999;
+            box-shadow: 0 0 20px #f00;
+        }
+        
+        /* Clave secreta */
+        .secret-key {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px dashed #0f0;
+            background: #111;
+            text-align: center;
+            font-size: 18px;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #0f0; }
+            50% { box-shadow: 0 0 20px #0f0; }
+            100% { box-shadow: 0 0 5px #0f0; }
+        }
+        
+        .key-title {
+            color: #0f0;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .key-value {
+            font-family: monospace;
+            letter-spacing: 3px;
+            color: #ff0;
+            font-size: 22px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #0f0;
+        }
+        
+        .copy-message {
+            color: #0f0;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="container">
+        <h1 class="glitch">SISTEMA DE ACCESO SEGURO</h1>
+        <p>Ingrese la contraseña de acceso para continuar...</p>
+        
+        <div class="input-group">
+            <input type="password" id="passwordInput" placeholder="Contraseña">
+        </div>
+        
+        <button id="accessButton">VERIFICAR ACCESO</button>
+        
+        <div id="errorMessage" class="message error">
+            ¡ACCESO DENEGADO! Contraseña incorrecta.
+        </div>
+        
+        <div id="successMessage" class="message success">
+            ¡ACCESO CONCEDIDO! Iniciando descarga...
+        </div>
+        
+        <div id="secretKeyContainer" class="secret-key">
+            <div class="key-title">CLAVE SECRETA DE ACCESO:</div>
+            <div class="key-value" id="secretKeyText">ul7r4v10l371gh7r3v34l5</div>
+            <button id="copyKeyButton">COPIAR CLAVE</button>
+            <div id="copyMessage" class="copy-message">¡Clave copiada al portapapeles!</div>
+            <div style="margin-top: 15px; font-size: 14px;">Guarde esta clave en un lugar seguro</div>
+        </div>
+    </div>
+    
+    <div id="contextMenuWarning" class="context-menu-warning">
+        <h2>¡ACCIÓN NO PERMITIDA!</h2>
+        <p>El menú contextual ha sido deshabilitado por seguridad.</p>
+    </div>
+
+    <script>
+        // Bloquear clic derecho
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showContextMenuWarning();
+        });
+        
+        // Bloquear combinaciones de teclado comunes para el menú contextual
+        document.addEventListener('keydown', function(e) {
+            // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                showContextMenuWarning();
+            }
+        });
+        
+        function showContextMenuWarning() {
+            const warning = document.getElementById('contextMenuWarning');
+            warning.style.display = 'block';
+            
+            setTimeout(function() {
+                warning.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Verificación de contraseña
+        document.getElementById('accessButton').addEventListener('click', function() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const secretKeyContainer = document.getElementById('secretKeyContainer');
+            
+            // Ocultar todos los mensajes primero
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            secretKeyContainer.style.display = 'none';
+            document.getElementById('copyMessage').style.display = 'none';
+            
+            // Contraseña secreta (cámbiala por la que quieras)
+            const secretPassword = "dc47af13e803d8c8cd32355437f5e02cf795733f";
+            
+            
+            if(password === secretPassword) {
+                // Contraseña correcta
+                successMessage.style.display = 'block';
+                
+                // Simular descarga después de 2 segundos
+                setTimeout(function() {
+                    // Crear un enlace de descarga (simulado)
+                    const link = document.createElement('a');
+                    link.href = 'https://github.com/jritsqmet/seguridad-web/blob/main/assets/pictures/i2/vestrahorn-mountain.jpg?raw=true'; // Aquí podrías poner una URL real de descarga
+                    link.download = 'documento';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Mensaje adicional
+                    successMessage.textContent = "¡DESCARGA COMPLETADA!";
+                    
+                    // Mostrar clave secreta después de 3 segundos
+                    setTimeout(function() {
+                        secretKeyContainer.style.display = 'block';
+                    }, 3000);
+                }, 2000);
+            } else {
+                // Contraseña incorrecta
+                errorMessage.style.display = 'block';
+                
+                // Efecto adicional para contraseña incorrecta
+                document.getElementById('passwordInput').style.borderColor = '#f00';
+                document.getElementById('passwordInput').style.boxShadow = '0 0 10px #f00';
+                
+                // Restaurar después de 1 segundo
+                setTimeout(function() {
+                    document.getElementById('passwordInput').style.borderColor = '#0f0';
+                    document.getElementById('passwordInput').style.boxShadow = 'none';
+                }, 1000);
+            }
+        });
+        
+        // Copiar clave al portapapeles
+        document.getElementById('copyKeyButton').addEventListener('click', function() {
+            const keyText = document.getElementById('secretKeyText').textContent;
+            const copyMessage = document.getElementById('copyMessage');
+            
+            // Crear elemento temporal para copiar
+            const tempInput = document.createElement('input');
+            tempInput.value = keyText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            // Mostrar mensaje de confirmación
+            copyMessage.style.display = 'block';
+            
+            // Ocultar mensaje después de 3 segundos
+            setTimeout(function() {
+                copyMessage.style.display = 'none';
+            }, 3000);
+        });
+        
+        // Permitir verificar también con Enter
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                document.getElementById('accessButton').click();
+            }
+        });
+    </script>
+</body>
+</html>
+JR-2025

@@ -262,8 +262,8 @@
                 setTimeout(function() {
                     // Crear un enlace de descarga (simulado)
                     const link = document.createElement('a');
-                    link.href = '#'; // Aquí podrías poner una URL real de descarga
-                    link.download = 'https://github.com/jritsqmet/seguridad-web/raw/refs/heads/main/assets/pictures/vestrahorn-mountain.7z';
+                    link.href = 'https://github.com/jritsqmet/seguridad-web/raw/refs/heads/main/assets/pictures/vestrahorn-mountain.7z'; // Aquí podrías poner una URL real de descarga
+                    link.download = 'documento';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);

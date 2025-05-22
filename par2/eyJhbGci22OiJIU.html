@@ -254,6 +254,7 @@
             // Contraseña secreta (cámbiala por la que quieras)
             const secretPassword = "dc47af13e803d8c8cd32355437f5e02cf795733f";
             
+            
             if(password === secretPassword) {
                 // Contraseña correcta
                 successMessage.style.display = 'block';
@@ -262,7 +263,7 @@
                 setTimeout(function() {
                     // Crear un enlace de descarga (simulado)
                     const link = document.createElement('a');
-                    link.href = 'https://github.com/jritsqmet/seguridad-web/blob/main/assets/pictures/vestrahorn-mountain.jpg?raw=true'; // Aquí podrías poner una URL real de descarga
+                    link.href = 'https://github.com/jritsqmet/seguridad-web/blob/main/assets/pictures/i2/vestrahorn-mountain.jpg?raw=true'; // Aquí podrías poner una URL real de descarga
                     link.download = 'documento';
                     document.body.appendChild(link);
                     link.click();

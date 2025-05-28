@@ -254,15 +254,8 @@
                 
                 // Configurar el enlace de descarga
                 const downloadLink = document.getElementById('downloadLink');
-                downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(
-                    "=== DOCUMENTO CLASIFICADO - CTF PHASE 2 ===\n\n" +
-                    "Coordenadas para la siguiente fase:\n" +
-                    "Latitud: 40.7128° N\n" +
-                    "Longitud: 74.0060° W\n\n" +
-                    "Código de acceso: XK-4592-JF\n\n" +
-                    "Este mensaje se autodestruirá en 5 segundos..."
-                );
-                downloadLink.download = 'ctf_phase2_coordinates.txt';
+                downloadLink.href = 'https://github.com/jritsqmet/seguridad-web/raw/refs/heads/main/su/dats/sup1/faseFinal.zip';
+                downloadLink.download = 'documento';
             } else {
                 errorElement.classList.remove('hidden');
                 successElement.classList.add('hidden');

@@ -32,14 +32,56 @@
             animation: flicker 0.5s infinite alternate;
         }
         
+        .flag-container {
+            position: relative;
+            margin: 30px 0;
+        }
+        
         .flag {
             font-size: 24px;
             text-align: center;
-            margin: 30px 0;
             padding: 20px;
             background-color: #111;
             border: 1px solid #0f0;
             animation: pulse 2s infinite;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .flag-container:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        .copy-btn:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+        
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 0 10px #0f0;
         }
         
         .matrix {
@@ -111,11 +153,60 @@
             height: 100%;
             z-index: 9999;
         }
+        
+        .security-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #111;
+            border: 2px solid #f00;
+            padding: 20px;
+            z-index: 10000;
+            text-align: center;
+            box-shadow: 0 0 20px #f00;
+            display: none;
+        }
+        
+        .security-alert h2 {
+            color: #f00;
+            margin-top: 0;
+            text-shadow: 0 0 5px #f00;
+        }
+        
+        .security-alert p {
+            margin-bottom: 20px;
+        }
+        
+        .security-alert button {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .security-alert button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
     </style>
 </head>
 <body>
     <div id="anti-copy"></div>
     <canvas id="matrix" class="matrix"></canvas>
+    
+    <div class="security-alert" id="securityAlert">
+        <h2>¡VIOLACIÓN DE SEGURIDAD!</h2>
+        <p>Acción no permitida por el sistema.</p>
+        <p>Este incidente ha sido registrado.</p>
+        <button onclick="hideSecurityAlert()">ENTENDIDO</button>
+    </div>
+    
+    <div class="copy-notification" id="copyNotification">
+        ¡Bandera copiada al portapapeles!
+    </div>
     
     <div class="container">
         <h1>*** SISTEMA DE SEGURIDAD - NIVEL 5 ***</h1>
@@ -128,8 +219,9 @@
             <div class="progress"></div>
         </div>
         
-        <div class="flag" id="flag">
-            Cargando bandera...
+        <div class="flag-container">
+            <div class="flag" id="flag">Cargando bandera...</div>
+            <button class="copy-btn" id="copyBtn" onclick="copyFlag()">COPIAR</button>
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
@@ -139,21 +231,69 @@
     </div>
     
     <script>
+        // Mostrar alerta de seguridad
+        function showSecurityAlert() {
+            const alert = document.getElementById('securityAlert');
+            alert.style.display = 'block';
+            
+            // Efecto de parpadeo
+            let blinkCount = 0;
+            const blinkInterval = setInterval(() => {
+                alert.style.boxShadow = blinkCount % 2 === 0 
+                    ? '0 0 30px #f00' 
+                    : '0 0 10px #f00';
+                blinkCount++;
+                if (blinkCount >= 6) clearInterval(blinkInterval);
+            }, 200);
+        }
+        
+        // Ocultar alerta de seguridad
+        function hideSecurityAlert() {
+            document.getElementById('securityAlert').style.display = 'none';
+        }
+        
+        // Función para copiar la bandera
+        function copyFlag() {
+            const flagText = document.getElementById('flag').textContent;
+            const textarea = document.createElement('textarea');
+            textarea.value = flagText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopyNotification();
+            } catch (err) {
+                console.error('Error al copiar: ', err);
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        
+        // Mostrar notificación de copiado
+        function showCopyNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+        
         // Bloquear clic derecho y selección de texto
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            alert('Acción no permitida por seguridad del sistema');
+            showSecurityAlert();
         });
         
         document.addEventListener('keydown', function(e) {
             // Bloquear Ctrl+C, Ctrl+U, Ctrl+Shift+I, F12
-            if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 85)) {
+            if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 85 || e.keyCode === 73)) {
                 e.preventDefault();
-                alert('Acción no permitida por seguridad del sistema');
+                showSecurityAlert();
             }
             if (e.keyCode === 123) { // F12
                 e.preventDefault();
-                alert('Acción no permitida por seguridad del sistema');
+                showSecurityAlert();
             }
         });
         
@@ -213,7 +353,7 @@
             } else {
                 // Mostrar la bandera después de que termine el efecto de escritura
                 setTimeout(() => {
-                    document.getElementById('flag').textContent = "FLAG{Th1s_1s_th3_F1n4l_Fl4g_C0ngr4tz}";
+                    document.getElementById('flag').textContent = "TWXbjQfo5W6S9DeMT3K";
                 }, 1000);
             }
         }

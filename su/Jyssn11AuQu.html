@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE SYSTEM // CTF PHASE 2</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .terminal {
+            width: 700px;
+            height: 400px;
+            border: 1px solid #0f0;
+            box-shadow: 0 0 15px #0f0;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .terminal::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
+            z-index: -1;
+        }
+        
+        .header {
+            border-bottom: 1px solid #0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        h1 {
+            color: #0f0;
+            margin: 0;
+            font-size: 1.2em;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .status {
+            color: #0f0;
+        }
+        
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .prompt {
+            color: #0f0;
+            margin-right: 10px;
+        }
+        
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            flex-grow: 1;
+            padding: 5px;
+            outline: none;
+        }
+        
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 5px 15px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        button:hover {
+            background: #0c0;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .error {
+            color: #f00;
+            text-align: center;
+            margin: 10px 0;
+            animation: blink 0.5s steps(2, start) infinite;
+        }
+        
+        .success {
+            color: #0f0;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .download-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            text-align: center;
+            background: #0f0;
+            color: #000;
+            padding: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .download-btn:hover {
+            background: #0c0;
+        }
+        
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 2s steps(40, end);
+        }
+        
+        #warningMessage {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #f00;
+            padding: 20px 40px;
+            border: 2px solid #f00;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 0 20px #f00;
+            max-width: 80%;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink {
+            to {
+                visibility: hidden;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <h1>SECURE SYSTEM ACCESS // CTF PHASE 2</h1>
+            <div class="status">[SECURITY LEVEL: HIGH]</div>
+        </div>
+        
+        <div class="prompt-line typing">> Autenticación requerida para acceso de nivel 5</div>
+        <div class="prompt-line">> Ingrese la clave de acceso obtenida en la fase 1:</div>
+        
+        <div class="prompt-line">
+            <span class="prompt">> </span>
+            <input type="password" id="password" placeholder="********" autocomplete="off" autofocus>
+            <button onclick="checkPassword()">VERIFICAR</button>
+        </div>
+        
+        <div id="error" class="error hidden">! ACCESO DENEGADO ! Clave incorrecta</div>
+        
+        <div id="success" class="hidden">
+            <div class="success">> Acceso concedido. Bienvenido, agente.</div>
+            <a href="#" id="downloadLink" class="download-btn">DESCARGAR DOCUMENTO</a>
+            <div class="prompt-line">> El documento contiene información clasificada para la siguiente fase.</div>
+        </div>
+    </div>
+
+    <div id="warningMessage">
+        ACCIÓN NO PERMITIDA<br>
+        La inspección del código está estrictamente prohibida
+    </div>
+
+    <script>
+        // Contraseña correcta
+        const correctPassword = "ctf2023";
+        
+        // Mostrar advertencia de acción no permitida
+        function showWarning() {
+            const warning = document.getElementById('warningMessage');
+            warning.style.display = 'block';
+            
+            setTimeout(() => {
+                warning.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Bloquear combinación Ctrl+S
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+                e.preventDefault();
+                showWarning();
+                return false;
+            }
+            
+            // También bloqueamos otras combinaciones comunes
+            if (
+                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) ||
+                (e.ctrlKey && ['u', 'U'].includes(e.key)) ||
+                e.key === 'F12'
+            ) {
+                e.preventDefault();
+                showWarning();
+                return false;
+            }
+        });
+        
+        // Protección contra clic derecho
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showWarning();
+            return false;
+        });
+        
+        // Función para verificar la contraseña
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            const errorElement = document.getElementById('error');
+            const successElement = document.getElementById('success');
+            
+            if (password === correctPassword) {
+                errorElement.classList.add('hidden');
+                successElement.classList.remove('hidden');
+                
+                // Configurar el enlace de descarga
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(
+                    "=== DOCUMENTO CLASIFICADO - CTF PHASE 2 ===\n\n" +
+                    "Coordenadas para la siguiente fase:\n" +
+                    "Latitud: 40.7128° N\n" +
+                    "Longitud: 74.0060° W\n\n" +
+                    "Código de acceso: XK-4592-JF\n\n" +
+                    "Este mensaje se autodestruirá en 5 segundos..."
+                );
+                downloadLink.download = 'ctf_phase2_coordinates.txt';
+            } else {
+                errorElement.classList.remove('hidden');
+                successElement.classList.add('hidden');
+                document.getElementById('password').value = '';
+            }
+        }
+        
+        // Permitir usar Enter para enviar la contraseña
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
+</body>
+</html>

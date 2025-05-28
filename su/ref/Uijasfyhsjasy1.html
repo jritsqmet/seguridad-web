@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío Final - Bandera Capturada</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px dashed #0f0;
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            text-shadow: 0 0 5px #0f0;
+            animation: flicker 0.5s infinite alternate;
+        }
+        
+        .flag {
+            font-size: 24px;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #111;
+            border: 1px solid #0f0;
+            animation: pulse 2s infinite;
+        }
+        
+        .matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .access-granted {
+            color: #0f0;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 30px;
+        }
+        
+        .typing {
+            border-right: 2px solid #0f0;
+            animation: blink 0.75s step-end infinite;
+            overflow: hidden;
+            white-space: nowrap;
+            display: inline-block;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #0f0; }
+            50% { box-shadow: 0 0 20px #0f0; }
+            100% { box-shadow: 0 0 5px #0f0; }
+        }
+        
+        @keyframes blink {
+            from, to { border-color: transparent }
+            50% { border-color: #0f0; }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #111;
+            border: 1px solid #0f0;
+            margin: 20px 0;
+        }
+        
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: #0f0;
+            animation: load 3s forwards;
+        }
+        
+        @keyframes load {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+        
+        #anti-copy {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div id="anti-copy"></div>
+    <canvas id="matrix" class="matrix"></canvas>
+    
+    <div class="container">
+        <h1>*** SISTEMA DE SEGURIDAD - NIVEL 5 ***</h1>
+        
+        <div class="access-granted">
+            <span id="typing-text" class="typing"></span>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        
+        <div class="flag" id="flag">
+            Cargando bandera...
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <p>¡Felicidades! Has completado todos los desafíos.</p>
+            <p>El sistema ha sido comprometido con éxito.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Bloquear clic derecho y selección de texto
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            alert('Acción no permitida por seguridad del sistema');
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            // Bloquear Ctrl+C, Ctrl+U, Ctrl+Shift+I, F12
+            if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 85)) {
+                e.preventDefault();
+                alert('Acción no permitida por seguridad del sistema');
+            }
+            if (e.keyCode === 123) { // F12
+                e.preventDefault();
+                alert('Acción no permitida por seguridad del sistema');
+            }
+        });
+        
+        // Efecto Matrix
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const symbols = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
+        
+        const alphabet = katakana + latin + nums + symbols;
+        
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        
+        const rainDrops = [];
+        
+        for (let x = 0; x < columns; x++) {
+            rainDrops[x] = 1;
+        }
+        
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        };
+        
+        setInterval(draw, 30);
+        
+        // Efecto de texto que se escribe
+        const text = "Acceso concedido. Desbloqueando bandera final...";
+        const typingText = document.getElementById('typing-text');
+        let i = 0;
+        
+        function typeWriter() {
+            if (i < text.length) {
+                typingText.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, Math.random() * 100 + 50);
+            } else {
+                // Mostrar la bandera después de que termine el efecto de escritura
+                setTimeout(() => {
+                    document.getElementById('flag').textContent = "FLAG{Th1s_1s_th3_F1n4l_Fl4g_C0ngr4tz}";
+                }, 1000);
+            }
+        }
+        
+        // Iniciar efectos cuando la página cargue
+        window.onload = function() {
+            setTimeout(typeWriter, 1500);
+        };
+        
+        // Ajustar canvas al cambiar tamaño de ventana
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

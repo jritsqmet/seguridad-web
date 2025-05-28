@@ -35,6 +35,9 @@
         .flag-container {
             position: relative;
             margin: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .flag {
@@ -44,26 +47,18 @@
             background-color: #111;
             border: 1px solid #0f0;
             animation: pulse 2s infinite;
+            margin-right: 10px;
         }
         
         .copy-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
             background-color: #000;
             color: #0f0;
             border: 1px solid #0f0;
-            padding: 5px 10px;
+            padding: 10px 15px;
             cursor: pointer;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .flag-container:hover .copy-btn {
-            opacity: 1;
+            transition: all 0.3s;
         }
         
         .copy-btn:hover {
@@ -221,7 +216,7 @@
         
         <div class="flag-container">
             <div class="flag" id="flag">Cargando bandera...</div>
-            <button class="copy-btn" id="copyBtn" onclick="copyFlag()">COPIAR</button>
+            <button class="copy-btn" id="copyBtn">COPIAR</button>
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
@@ -230,7 +225,7 @@
         </div>
     </div>
     
-    <script>
+ <script>
         // Mostrar alerta de seguridad
         function showSecurityAlert() {
             const alert = document.getElementById('securityAlert');
@@ -255,14 +250,37 @@
         // Función para copiar la bandera
         function copyFlag() {
             const flagText = document.getElementById('flag').textContent;
+            
+            // Usar la API moderna del portapapeles si está disponible
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(flagText)
+                    .then(() => showCopyNotification())
+                    .catch(err => {
+                        console.error('Error al copiar: ', err);
+                        fallbackCopyText(flagText);
+                    });
+            } else {
+                // Fallback para navegadores antiguos
+                fallbackCopyText(flagText);
+            }
+        }
+        
+        // Método alternativo para copiar texto
+        function fallbackCopyText(text) {
             const textarea = document.createElement('textarea');
-            textarea.value = flagText;
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = 0;
             document.body.appendChild(textarea);
             textarea.select();
             
             try {
-                document.execCommand('copy');
-                showCopyNotification();
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopyNotification();
+                } else {
+                    console.error('Falló al copiar texto');
+                }
             } catch (err) {
                 console.error('Error al copiar: ', err);
             }
@@ -287,19 +305,19 @@
         
         document.addEventListener('keydown', function(e) {
             // Bloquear Ctrl+C, Ctrl+U, Ctrl+Shift+I, F12
-            if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 85 || e.keyCode === 73)) {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I')) {
                 e.preventDefault();
                 showSecurityAlert();
             }
-            if (e.keyCode === 123) { // F12
+            if (e.key === 'F12') {
                 e.preventDefault();
                 showSecurityAlert();
             }
 
-            if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+            // Bloquear Ctrl+S y Ctrl+Shift+S
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
                 e.preventDefault();
-                showSecurityAlert()
-                return false;
+                showSecurityAlert();
             }
         });
         
@@ -360,6 +378,10 @@
                 // Mostrar la bandera después de que termine el efecto de escritura
                 setTimeout(() => {
                     document.getElementById('flag').textContent = "wPB7Cil29nIoT99tB3o5rx0X";
+                    // Habilitar el botón de copiar
+                    document.getElementById('copyBtn').addEventListener('click', copyFlag);
+                    // Eliminar la capa anti-copy que bloquea los eventos
+                    document.getElementById('anti-copy').style.display = 'none';
                 }, 1000);
             }
         }
